@@ -1,0 +1,46 @@
+# Usage of docker compose simplifies the deploy process. 3 different containers for data-integrity, ingest and rabbitmq parts.
+version: "3.7"
+services:
+    python-data-integrity:
+        container_name: python-data-integrity
+        build: .
+        image: python-data-integrity:v1
+        ports:
+            - "5000:5000"
+        network_mode: "host"
+        restart: always
+        deploy:
+            replicas: 1
+        logging:
+            driver: journald
+            options:
+                tag: dt-logs
+    python-ingest:
+        container_name: python-ingest
+        image: python-ingest:v1
+        ports:
+            - "2006:2006"
+        network_mode: "host"
+        restart: always
+        deploy:
+            replicas: 1
+        logging:
+            driver: journald
+            options:
+                tag: dt-logs
+    rabbit:
+        container_name: rabbitmq
+        image: rabbitmq:3-management
+        ports:
+            - "5009:5672"
+            - "5010:15672"
+        environment:
+            RABBITMQ_DEFAULT_PASS: pass
+            RABBITMQ_DEFAULT_USER: user
+        restart: always
+        deploy:
+            replicas: 1
+        logging:
+            driver: journald
+            options:
+                tag: dt-logs
