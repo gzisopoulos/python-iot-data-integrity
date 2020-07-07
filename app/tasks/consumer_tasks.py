@@ -18,8 +18,8 @@ async def callback(channel, body, envelope, properties):
         address = ingest.ip_address
         port = ingest.port
     else:
-        address = app.config['ELINGEST_HOST']
-        port = app.config['ELINGEST_PORT']
+        address = app.config['INGEST_HOST']
+        port = app.config['INGEST_PORT']
     push_back_services_up = bind_to_service(address, port)
     if event_not_corrupted:
         if not push_back_services_up:
@@ -85,7 +85,7 @@ async def consume(**kwargs):
 async def push_back_event(body, channel, envelope):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
-            s.connect((app.config['ELINGEST_HOST'], int(app.config['ELINGEST_PORT'])))
+            s.connect((app.config['INGEST_HOST'], int(app.config['INGEST_PORT'])))
             s.sendall(body)
             data = s.recv(1024)
             s.close()
