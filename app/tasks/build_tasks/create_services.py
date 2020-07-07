@@ -10,7 +10,7 @@ def create_services():
     ingest_service = Service.find_by_name('Ingest')
     if not ingest_service:
         ingest_service = Service(name='Ingest', ip_address=app.config['INGEST_HOST'],
-                                 port=app.config['INGEST_HOST'])
+                                 port=app.config['INGEST_PORT'])
         try:
             ingest_service.save_to_db()
         except Exception as e:

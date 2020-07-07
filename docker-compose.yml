@@ -12,20 +12,18 @@ services:
         deploy:
             replicas: 1
         logging:
-            driver: journald
             options:
                 tag: dt-logs
     python-ingest:
         container_name: python-ingest
         image: python-ingest:v1
-        ports:
-            - "2006:2006"
+#        ports:
+#            - "2006:2006"
         network_mode: "host"
         restart: always
         deploy:
             replicas: 1
         logging:
-            driver: journald
             options:
                 tag: dt-logs
     rabbit:
@@ -41,6 +39,5 @@ services:
         deploy:
             replicas: 1
         logging:
-            driver: journald
             options:
                 tag: dt-logs

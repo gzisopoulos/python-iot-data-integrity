@@ -21,5 +21,7 @@ migrate = Migrate(app, db)
 
 alfred_logger = logging.getLogger('alfred_logger')
 app.logger.handlers.extend(alfred_logger.handlers)
+logging.getLogger().setLevel(logging.INFO)
+
 
 from app.routes import routes
