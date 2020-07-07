@@ -5,9 +5,9 @@ from app.models.base import BaseModel
 class Service(BaseModel):
     __tablename__ = 'service'
 
-    name = db.Column(db.String(20), nullable=False)
+    name = db.Column(db.String(), nullable=False)
     port = db.Column(db.Integer, index=True, unique=True, nullable=False)
-    ip_address = db.Column(db.String(20), nullable=False)
+    ip_address = db.Column(db.String(), nullable=False)
 
     def __repr__(self):
         return '<Service {}>'.format(self.name)
