@@ -5,7 +5,7 @@ Example source code for Europython 2020 talk by George Zisopoulos and Theofanis 
 Docker (> 19.03) and docker-compose (> 3.7) are required to run the python-ingest from a container.
 
 ## Pre Installation Notes
-* First of all clone this repo (Ingest module) and make its image on your machine. Please check readme.md file [here](https://github.com/thepetk/python-ingest)
+* First of all clone this [repo](https://github.com/thepetk/python-ingest) (Ingest module) and make its image on your machine. Please check readme.md file [here](https://github.com/thepetk/python-ingest)
 
 * Create a root project folder and get inside. On linux and Mac OS:
 ```
