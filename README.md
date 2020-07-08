@@ -7,7 +7,7 @@ Docker (> 19.03) and docker-compose (> 3.7) are required to run the python-inges
 ## Pre Installation Notes
 * First of all clone this repo (Ingest module) and make its image on your machine. Please check readme.md file [here](https://github.com/thepetk/python-ingest)
 
-* Create a root project folder and get inside. On linux:
+* Create a root project folder and get inside. On linux and Mac OS:
 ```
 mkdir your_folders_name
 cd your_folders_name
@@ -45,8 +45,13 @@ make install
 { "device_number": "86915304265485", "event_code": "4002", "message_date": "2020\/02\/05 12:18:28", "latitude": "37.9815116", "longitude": "23.7315200" }
 ```
 * Save above text to event file and run:
+*On linux:
 ```
 cat event | ncat '127.0.0.1' 2006
+```
+*On Mac OS 
+```
+cat event | nc '127.0.0.1' 2006
 ```
 
 ## Contributing
