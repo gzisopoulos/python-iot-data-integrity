@@ -45,11 +45,11 @@ make install
 { "device_number": "86915304265485", "event_code": "4002", "message_date": "2020\/02\/05 12:18:28", "latitude": "37.9815116", "longitude": "23.7315200" }
 ```
 * Save above text to event file and run:
-*On linux:
+* On linux:
 ```
 cat event | ncat '127.0.0.1' 2006
 ```
-*On Mac OS 
+* On Mac OS 
 ```
 cat event | nc '127.0.0.1' 2006
 ```
