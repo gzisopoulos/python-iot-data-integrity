@@ -4,6 +4,9 @@ from dotenv import load_dotenv
 
 
 class Config(object):
+    """
+    Config file loads variable values from .env (dotenv) file
+    """
     dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
     load_dotenv(dotenv_path)
 
@@ -18,6 +21,7 @@ class Config(object):
         ['postgresql://', os.getenv('DT_USER'), ':', os.getenv('DT_KEY'), '@localhost/dt_db'])
     BIND_CONNECTION_STRING = ''.join(
         ['postgresql://', os.getenv('INGEST_USER'), ':', os.getenv('INGEST_KEY'), '@localhost/ingest_db'])
+    # Bind to a second database (fetch event table)
     SQLALCHEMY_BINDS = {
         'ingest_db': BIND_CONNECTION_STRING
     }
