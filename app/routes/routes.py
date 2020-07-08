@@ -17,17 +17,20 @@ create_event_formats()
 app.logger.info('Starting Python IOT Data Integrity. Creating services, formats and error types.')
 
 try:
+    # Create new event loop
     dt_loop = asyncio.new_event_loop()
     asyncio.set_event_loop(dt_loop)
 except RuntimeError:
     app.logger.warning('No available loop')
 
+# multiple ways to create and include tasks. We prefer asyncio.gather
 dt_tasks = asyncio.gather(
     consume(),
     periodic_integrity_task(app.config['PERIODIC_INTEGRITY_TIMEOUT']),
     check_heartbeat(app.config['HEARTBEAT_TIMEOUT'])
 )
 try:
+    # Multiple ways to run a loop. Here you can also run it via run_until_complete
     dt_loop.run_forever()
 except KeyboardInterrupt:
     app.logger.info('Canceling Tasks..')
