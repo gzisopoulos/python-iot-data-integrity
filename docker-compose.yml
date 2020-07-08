@@ -1,6 +1,7 @@
 # Usage of docker compose simplifies the deploy process. 3 different containers for data-integrity, ingest and rabbitmq parts.
 version: "3.7"
 services:
+    # Create service python data integrity with host's network and add a tag for logs
     python-data-integrity:
         container_name: python-data-integrity
         build: .
@@ -8,17 +9,20 @@ services:
         ports:
             - "5000:5000"
         network_mode: "host"
+        # Run container as daemon
         restart: always
         deploy:
             replicas: 1
         logging:
             options:
+                # This tag helps you to retain logs after container deletion
                 tag: dt-logs
+    # Create service python ingest
     python-ingest:
         container_name: python-ingest
         image: python-ingest:v1
-#        ports:
-#            - "2006:2006"
+        ports:
+            - "2006:2006"
         network_mode: "host"
         restart: always
         deploy:
@@ -26,8 +30,10 @@ services:
         logging:
             options:
                 tag: dt-logs
+    # Create service for rabbitmq
     rabbit:
         container_name: rabbitmq
+        # You can choose your preferred rabbitmq image
         image: rabbitmq:3-management
         ports:
             - "5009:5672"

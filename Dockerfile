@@ -20,4 +20,4 @@ RUN pip3 install --no-cache-dir -r /app/requirements.txt
 WORKDIR /app
 
 # run aflred with uwsgi
-ENTRYPOINT ["uwsgi", "--http", "0.0.0.0:8002", "--module", "app:app", "--processes", "1", "--threads", "8"]
+CMD ["uwsgi", "--http", "0.0.0.0:8002", "--module", "app:app", "--processes", "1", "--threads", "8"]
