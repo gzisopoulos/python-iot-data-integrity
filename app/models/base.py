@@ -2,7 +2,6 @@ from app import db
 
 
 class BaseModel(db.Model):
-    # __tablename__ = None
     __abstract__ = True
 
     id = db.Column(db.Integer, primary_key=True)
@@ -21,4 +20,3 @@ class BaseModel(db.Model):
     def delete_from_db(self):
         db.session.delete(self)
         db.session.commit()
-        ß
