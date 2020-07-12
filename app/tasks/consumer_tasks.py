@@ -28,6 +28,7 @@ async def callback(channel, body, envelope, properties):
             await callback(channel, body, envelope, properties)
         await push_back_event(body, channel, envelope)
     else:
+        await channel.basic_client_ack(envelope.delivery_tag)
         app.logger.info('Event corrupted or unaccceptable')
 
 
@@ -68,18 +69,19 @@ async def consume(**kwargs):
         await consume(wait_seconds=app.config['RMQ_RETRY'])
 
     try:
+        # We have to ensure that the queue is created in Ingest, If not we create it now
         await channel.queue_declare(
             queue_name='events',
             durable=True,
-            passive=False,
-            exclusive=True
         )
     except Exception as e:
         app.logger.info('Error on queue creation:\n' % (str(e)))
         await consume(wait_seconds=app.config['RMQ_RETRY'])
 
     # Infinite consume after run forever loop
-    await channel.basic_consume(callback, queue_name='events')
+    # await channel.basic_consume(callback, queue_name='events')
+
+    await channel.basic_consume(callback, queue_name='events', no_ack=False)
 
 
 async def push_back_event(body, channel, envelope):
@@ -90,7 +92,7 @@ async def push_back_event(body, channel, envelope):
             data = s.recv(1024)
             s.close()
             await channel.basic_client_ack(envelope.delivery_tag)
-            app.logger.info('Event Pushed back to Elixir Ingest')
+            app.logger.info('Event Pushed back to Ingest')
         except ConnectionRefusedError:
-            app.logger.info('Elixir Ingest Service Down. Event pushed back to queue')
+            app.logger.info('Ingest Service Down. Event pushed back to queue')
             # TODO - Add redeliver tag to event.
