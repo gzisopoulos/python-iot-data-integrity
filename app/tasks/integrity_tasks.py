@@ -1,5 +1,5 @@
 import asyncio
-
+import pdb
 import json
 import datetime
 
@@ -20,6 +20,7 @@ async def periodic_integrity_task(timeout):
     while True:
         await asyncio.sleep(int(timeout))
         start = datetime.datetime.now()
+
         app.logger.info('Integrity Task started at: %s' % (str(start.strftime('%Y-%m-%d %H:%M:%S'))))
         corrupted_events = 0
         events_count = Event.get_count()
@@ -51,11 +52,11 @@ async def check_quality(event):
     event_quality_ok = True
 
     # if event is string then check event integrity was called from consumer
+
     if isinstance(event, str) or isinstance(event, bytes):
         decoded_event = json.loads(event, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
     else:
         decoded_event = event
-
     if duplicate_trace(decoded_event):
         return False
 
@@ -72,7 +73,7 @@ async def check_quality(event):
             db.session.rollback()
             app.logger.warning('Error on INSERT to ErrorTrace: %s' % (str(e)))
 
-    if event_code_exists(decoded_event.event_code):
+    if not event_code_exists(decoded_event.event_code):
         error_trace = ErrorTrace(device_number=decoded_event.device_number,
                                  error_code=2,
                                  event_code=decoded_event.event_code,
@@ -99,11 +100,11 @@ async def check_quality(event):
     return event_quality_ok
 
 
-def event_code_exists(event_format):
+def event_code_exists(event_code):
     """
     Checks if code exists in EventFormat.
     """
-    event_format = EventFormat.find_by_event_code(event_format)
+    event_format = EventFormat.find_by_event_code(event_code)
     if event_format:
         return True
     else:
@@ -111,13 +112,25 @@ def event_code_exists(event_format):
 
 
 def wrong_coordinates(longitude, latitude):
-    if not longitude:
-        longitude = 0
-    if not latitude:
-        latitude = 0
-    if (float(longitude) > 90 or float(longitude) < -90 or
-            float(latitude) > 180 or float(latitude) < -180):
+    """
+    Check if coordinates are wrong and if longitude and latitude are correct
+    """
+    try:
+        lon = float(longitude)
+        lat = float(latitude)
+    # Value error will be raised when longitude or latitude can not be converted to float
+    except ValueError:
+        db.session.rollback()
         return True
+    # Value error will be raised when longitude or latitude value is None
+    except TypeError:
+        return True
+
+    # check if longitude and latitude are within coordinates values range
+    if lon > 90 or lon < -90 or lat > 180 or lat < -180:
+        return True
+    else:
+        return False
 
 
 def notify_for_device_check(device_number, error_code, limit):
