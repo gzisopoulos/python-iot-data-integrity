@@ -36,10 +36,11 @@ class Config(object):
     RMQ_PASSWORD = os.getenv('RMQ_PASSWORD')
     RMQ_RETRY = os.getenv('RMQ_RETRY')
 
-    # Elixir Ingest Configuration
+    # Ingest Configuration
     INGEST_HOST = os.getenv('INGEST_HOST')
     INGEST_PORT = os.getenv('INGEST_PORT')
     PUSH_BACK_TIMEOUT = os.getenv('PUSH_BACK_TIMEOUT')
+    RANDOMIZED_SET_SCALE = os.getenv('RANDOMIZED_SET_SCALE')
 
     # Tasks Configuration
     PERIODIC_INTEGRITY_TIMEOUT = os.getenv('PERIODIC_INTEGRITY_TIMEOUT')
