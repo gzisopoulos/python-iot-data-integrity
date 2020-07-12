@@ -6,7 +6,7 @@ from app.models.service import Service
 from app.tasks.task_utils import bind_to_service
 
 
-async def check_heartbeat(timeout, **kwargs):
+async def check_heartbeat(timeout):
     """
     Fetches all available services and binds to their ports in order to check if their are up.
     """
