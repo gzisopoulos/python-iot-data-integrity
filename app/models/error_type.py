@@ -7,8 +7,8 @@ class ErrorType(BaseModel):
 
     error_code = db.Column(db.Integer, index=True, unique=True, nullable=False)
     description = db.Column(db.String(20))
-    limit = db.Column(db.Integer(), nullable=False, server_default='1')
-    critical = db.Column(db.SmallInteger, nullable=False, server_default='0')
+    limit = db.Column(db.Integer(), nullable=False, default=1)
+    critical = db.Column(db.SmallInteger, nullable=False, default=0)
 
     def __repr__(self):
         return '<Error Type {}>'.format(self.error_code)
