@@ -20,8 +20,7 @@ def upgrade():
         'error_trace',
         sa.Column('id', sa.Integer, primary_key=True),
         sa.Column('device_number', sa.String(), nullable=False),
-        sa.Column('error_code', sa.String(), nullable=False),
-        sa.Column('event_code', sa.String(), nullable=False),
+        sa.Column('error_code', sa.Integer(), nullable=False),
         sa.Column('message_date', sa.DateTime()))
 
     op.create_table(
