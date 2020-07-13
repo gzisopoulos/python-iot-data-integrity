@@ -1,19 +1,19 @@
 import asyncio
-import pdb
 import json
 import datetime
+import sqlalchemy
 
 from collections import namedtuple
 
 from app import app, db
-from app.tasks.task_utils import duplicate_trace
 from app.models.error_trace import ErrorTrace
 from app.models.error_type import ErrorType
 from app.models.event import Event
 from app.models.event_format import EventFormat
+from app.tasks.task_utils import bind_to_service
 
 
-async def periodic_integrity_task(timeout):
+async def periodic_integrity_task(psql_service, timeout):
     """
     Fetches a random set of events and applies integrity check
     """
@@ -21,30 +21,41 @@ async def periodic_integrity_task(timeout):
         await asyncio.sleep(int(timeout))
         start = datetime.datetime.now()
 
-        app.logger.info('Integrity Task started at: %s' % (str(start.strftime('%Y-%m-%d %H:%M:%S'))))
-        corrupted_events = 0
-        events_count = Event.get_count()
-        randomized_set = Event.get_randomized_set(events_count)
+        # run this task only if postgresql is up
+        if bind_to_service(psql_service['ip_address'], psql_service['port']):
+            app.logger.info('Integrity Task started at: %s' % (str(start.strftime('%Y-%m-%d %H:%M:%S'))))
+            corrupted_events = 0
+            # get a randomized set to apply checks
+            events_count = Event.get_count()
+            randomized_set = Event.get_randomized_set(events_count)
+            if randomized_set:
+                for event in randomized_set:
+                    try:
+                        event_integrity_ok = check_quality(event)
+                    # rollback broken transaction if something goes wrong during query
+                    except sqlalchemy.exc.StatementError:
+                        db.session.rollback()
+                        app.logger.warning('Rolling back db transaction. Retrying in %s seconds...' % (str(timeout)))
+                        await asyncio.sleep(int(timeout))
+                        continue
+                    if not event_integrity_ok:
+                        corrupted_events += 1
+                if corrupted_events:
+                    total_time = int((datetime.datetime.now() - start).microseconds / 1000)
+                    app.logger.warning('Checked: %s random events in %s ms. Corrupted: %s' % (
+                        str(len(randomized_set)), str(total_time), str(corrupted_events)))
 
-        if randomized_set:
-            for event in randomized_set:
-                event_integrity_ok = await check_quality(event)
-                if not event_integrity_ok:
-                    corrupted_events += 1
-            if corrupted_events:
-                total_time = int((datetime.datetime.now() - start).microseconds / 1000)
-                app.logger.warning('Checked: %s random events in %s ms. Corrupted: %s' % (
-                    str(len(randomized_set)), str(total_time), str(corrupted_events)))
-
+                else:
+                    total_time = int((datetime.datetime.now() - start).microseconds / 1000)
+                    app.logger.info('Checked: %s random events in %s ms. Everything ok.' % (
+                        str(len(randomized_set)), str(total_time)))
             else:
-                total_time = int((datetime.datetime.now() - start).microseconds / 1000)
-                app.logger.info('Checked: %s random events in %s ms. Everything ok.' % (
-                    str(len(randomized_set)), str(total_time)))
+                app.logger.info('Integrity Task - Something went wrong. Retrying in %s seconds..' % (str(timeout)))
         else:
-            app.logger.info('Integrity Task - Something went wrong. Retrying in %s seconds..' % (str(timeout)))
+            app.logger.info('Integrity Task - Database is down. Retrying in %s seconds..' % (str(timeout)))
 
 
-async def check_quality(event):
+def check_quality(event):
     """
     Transforms event of rabbitmq event into an immutable object and applies some checks.
     """
@@ -57,30 +68,28 @@ async def check_quality(event):
         decoded_event = json.loads(event, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
     else:
         decoded_event = event
-    if duplicate_trace(decoded_event):
-        return False
 
-    # Case 1: Range of lat and lon.
+    # Case 1: Range of lat and lon
     if wrong_coordinates(decoded_event.longitude, decoded_event.latitude):
         error_trace = ErrorTrace(device_number=decoded_event.device_number,
                                  error_code=1,
-                                 event_code=decoded_event.event_code,
                                  message_date=decoded_event.message_date)
         try:
-            error_trace.save_to_db()
-            error_traces_list.append(error_trace)
+            if not duplicate_trace(error_trace):
+                error_trace.save_to_db()
+                error_traces_list.append(error_trace)
         except Exception as e:
             db.session.rollback()
             app.logger.warning('Error on INSERT to ErrorTrace: %s' % (str(e)))
-
+    # Case 2: Event code doesn't matching with any format
     if not event_code_exists(decoded_event.event_code):
         error_trace = ErrorTrace(device_number=decoded_event.device_number,
                                  error_code=2,
-                                 event_code=decoded_event.event_code,
                                  message_date=decoded_event.message_date)
         try:
-            error_trace.save_to_db()
-            error_traces_list.append(error_trace)
+            if not duplicate_trace(error_trace):
+                error_trace.save_to_db()
+                error_traces_list.append(error_trace)
         except Exception as e:
             db.session.rollback()
             app.logger.warning('Error on INSERT to ErrorTrace: %s' % (str(e)))
@@ -139,7 +148,20 @@ def notify_for_device_check(device_number, error_code, limit):
     """
     error_traces = ErrorTrace.query.filter(ErrorTrace.device_number == device_number).filter(
         ErrorTrace.error_code == error_code).all()
+    # look for similar error traces and if they reach this error type's limit notify.
     if len(error_traces) >= limit:
+        return True
+    else:
+        return False
+
+
+def duplicate_trace(new_error_trace):
+    """
+    Checks if the trace already exists.
+    """
+    error_trace = ErrorTrace.query.filter(ErrorTrace.device_number == new_error_trace.device_number).filter(
+        ErrorTrace.message_date == new_error_trace.message_date).first()
+    if error_trace:
         return True
     else:
         return False
