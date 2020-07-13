@@ -18,8 +18,8 @@ class Event(BaseModel):
     device_number = db.Column(db.String, index=True)
     event_code = db.Column(db.String, index=True)
     message_date = db.Column(db.DateTime, index=True)
-    latitude = db.Column(db.Numeric(precision=8, scale=6), server_default='0')
-    longitude = db.Column(db.Numeric(precision=8, scale=6), server_default='0')
+    latitude = db.Column(db.Numeric(precision=8, scale=6), default=0)
+    longitude = db.Column(db.Numeric(precision=8, scale=6), default=0)
 
     @classmethod
     def get_count(cls):
