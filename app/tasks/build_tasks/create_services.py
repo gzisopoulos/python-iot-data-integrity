@@ -8,22 +8,19 @@ def create_services():
     """
     # We prefer our integrity module to be independent from db
     # Here you may use redis or something like this as storage solution
-    services_list = [
-        {
-            'name': 'ingest',
+    services_dict = {
+        'Ingest': {
             'ip_address': app.config['INGEST_HOST'],
             'port': int(app.config['INGEST_PORT'])
         },
-        {
-            'name': 'postgresql',
+        'PostgreSQL': {
             'ip_address': app.config['POSTGRESQL_HOST'],
             'port': int(app.config['POSTGRESQL_PORT'])
         },
-        {
-            'name': 'rabbitmq',
+        'RabbitMQ': {
             'ip_address': app.config['RMQ_HOST'],
-            'port', int(app.config['RMQ_PORT'])
+            'port': int(app.config['RMQ_PORT'])
         }
-    ]
+    }
 
-    return services_list
+    return services_dict

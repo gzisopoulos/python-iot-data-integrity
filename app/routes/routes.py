@@ -8,13 +8,17 @@ from app.tasks.build_tasks.create_error_types import create_error_types
 from app.tasks.build_tasks.create_services import create_services
 from app.tasks.build_tasks.create_event_formats import create_event_formats
 
-# Initialize dt_db
-create_services()
-create_error_types()
-create_event_formats()
+# Initialize module. The services lists have to be outside db, but you can always
+# use redis or something similar to store this data
+services_dict = create_services()
 
-# AsyncIO Configuration
-app.logger.info('Starting Python IOT Data Integrity. Creating services, formats and error types.')
+types_response = create_error_types(services_dict['PostgreSQL'])
+app.logger.info(types_response)
+
+formats_response = create_event_formats(services_dict['PostgreSQL'])
+app.logger.info(formats_response)
+
+app.logger.info('Starting Python IOT Data Integrity...')
 
 try:
     # Create new event loop
@@ -26,8 +30,8 @@ except RuntimeError:
 # multiple ways to create and include tasks. We prefer asyncio.gather
 dt_tasks = asyncio.gather(
     consume(),
-    periodic_integrity_task(app.config['PERIODIC_INTEGRITY_TIMEOUT']),
-    check_heartbeat(app.config['HEARTBEAT_TIMEOUT'])
+    periodic_integrity_task(services_dict['PostgreSQL'], app.config['PERIODIC_INTEGRITY_TIMEOUT']),
+    check_heartbeat(services_dict, app.config['HEARTBEAT_TIMEOUT'])
 )
 try:
     # Multiple ways to run a loop. Here you can also run it via run_until_complete
