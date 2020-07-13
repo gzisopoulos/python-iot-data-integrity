@@ -6,8 +6,7 @@ class ErrorTrace(BaseModel):
     __tablename__ = 'error_trace'
 
     device_number = db.Column(db.String(20), index=True, unique=True, nullable=False)
-    error_code = db.Column(db.Integer, index=True, unique=True, nullable=False)
-    event_code = db.Column(db.String(10), nullable=False)
+    error_code = db.Column(db.Integer, index=True, nullable=False)
     message_date = db.Column(db.DateTime)
 
     def __repr__(self):
