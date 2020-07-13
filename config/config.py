@@ -35,6 +35,7 @@ class Config(object):
     RMQ_USERNAME = os.getenv('RMQ_USERNAME')
     RMQ_PASSWORD = os.getenv('RMQ_PASSWORD')
     RMQ_RETRY = os.getenv('RMQ_RETRY')
+    RMQ_QUEUE = os.getenv('RMQ_QUEUE')
 
     # Ingest Configuration
     INGEST_HOST = os.getenv('INGEST_HOST')
@@ -45,3 +46,7 @@ class Config(object):
     # Tasks Configuration
     PERIODIC_INTEGRITY_TIMEOUT = os.getenv('PERIODIC_INTEGRITY_TIMEOUT')
     HEARTBEAT_TIMEOUT = os.getenv('HEARTBEAT_TIMEOUT')
+
+    # PostgreSQL Configuration
+    POSTGRESQL_HOST = os.getenv('POSTGRESQL_HOST')
+    POSTGRESQL_PORT = os.getenv('POSTGRESQL_PORT')
