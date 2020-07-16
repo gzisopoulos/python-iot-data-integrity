@@ -11,6 +11,8 @@ from app.models.error_type import ErrorType
 from app.models.event import Event
 from app.models.event_format import EventFormat
 from app.tasks.task_utils import bind_to_service
+from app.tasks.build_tasks.create_error_types import create_error_types
+from app.tasks.build_tasks.create_event_formats import create_event_formats
 
 
 async def periodic_integrity_task(psql_service, timeout):
@@ -97,12 +99,15 @@ def check_quality(event):
     # Notify for device corruption if the error type limit is reached.
     if error_traces_list:
         for error_trace in error_traces_list:
+            all_types = ErrorType.query.all()
+            # Check if error types are created properly
+            if not all_types:
+                create_error_types()
             error_type = ErrorType.find_by_error_code(error_trace.error_code)
-            if error_type:
+            if not error_type:
                 if notify_for_device_check(decoded_event.device_number, error_type.error_code, error_type.limit):
                     app.logger.warning('Device %s reached limit for error code %s (%s)' %
                                        (decoded_event.device_number, error_type.error_code, error_type.description))
-
     if error_traces_list:
         event_quality_ok = False
     # Return the flag after KPI checks
@@ -113,6 +118,10 @@ def event_code_exists(event_code):
     """
     Checks if code exists in EventFormat.
     """
+    # Check if all formats created properly
+    all_formats = EventFormat.query.all()
+    if not all_formats:
+        create_event_formats()
     event_format = EventFormat.find_by_event_code(event_code)
     if event_format:
         return True
