@@ -3,6 +3,9 @@ from app.models.base import BaseModel
 
 
 class EventFormat(BaseModel):
+    """
+    All different event formats. For example acceleration event or ignition off event.
+    """
     __tablename__ = 'event_format'
 
     event_code = db.Column(db.Integer, unique=True, index=True)

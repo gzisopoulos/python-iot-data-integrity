@@ -3,6 +3,9 @@ from app.models.base import BaseModel
 
 
 class ErrorTrace(BaseModel):
+    """
+    All errors for a specific device inside an object.
+    """
     __tablename__ = 'error_trace'
 
     device_number = db.Column(db.String(20), index=True, unique=True, nullable=False)

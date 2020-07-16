@@ -3,6 +3,9 @@ from app.models.base import BaseModel
 
 
 class ErrorType(BaseModel):
+    """
+    All error types. For example broken gps or other.
+    """
     __tablename__ = 'error_type'
 
     error_code = db.Column(db.Integer, index=True, unique=True, nullable=False)
