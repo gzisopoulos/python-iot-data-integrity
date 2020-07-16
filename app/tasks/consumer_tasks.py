@@ -4,7 +4,6 @@ import socket
 import sqlalchemy
 
 from app import app, db
-from app.models.service import Service
 from app.tasks.integrity_tasks import check_quality
 from app.tasks.task_utils import bind_to_service
 

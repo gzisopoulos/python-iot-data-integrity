@@ -1,5 +1,4 @@
 from app import app, db
-from app.models.service import Service
 
 
 def create_services():

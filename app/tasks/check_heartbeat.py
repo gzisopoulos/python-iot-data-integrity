@@ -2,7 +2,6 @@ import asyncio
 import datetime
 
 from app import app
-from app.models.service import Service
 from app.tasks.task_utils import bind_to_service
 from app.tasks.build_tasks.create_services import create_services
 
