@@ -1,4 +1,4 @@
-# Pyhon IoT Data Integrity Example Code
+# Python IoT Data Integrity Example Code
 Example source code for Europython 2020 talk by George Zisopoulos and Theofanis Petkos.
 
 ## Requirements
